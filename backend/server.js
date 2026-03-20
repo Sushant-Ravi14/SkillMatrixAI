@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
+const candidateRoutes = require('./routes/candidateRoutes');
 
 // Connect to database
 connectDB();
@@ -16,6 +17,7 @@ app.use(express.urlencoded({ extended: false }));
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/hr', candidateRoutes);
 
 app.get('/', (req, res) => {
   res.send('SkillPath AI Backend API is running...');

@@ -19,7 +19,7 @@ exports.registerUser = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Please provide all required fields' });
     }
 
-    if (!['manager', 'trainer'].includes(role)) {
+    if (!['manager', 'trainer', 'HR'].includes(role)) {
       return res.status(400).json({ success: false, message: 'Invalid role' });
     }
 
