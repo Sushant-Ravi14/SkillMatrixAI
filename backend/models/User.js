@@ -19,8 +19,8 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['manager', 'trainer'],
-    required: [true, 'Please specify a role (manager or trainer)']
+    enum: ['manager', 'trainer', 'HR'],
+    required: [true, 'Please specify a role (manager, trainer, or HR)']
   }
 }, { timestamps: true });
 
