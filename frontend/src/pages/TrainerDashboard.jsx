@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import CustomDropdown from '../components/CustomDropdown';
 
 const ALL_CANDIDATES = [
   { id: 1, initials: 'RS', name: 'Rahul Sharma', applied: 'Applied 2h ago', role: 'Frontend Developer', score: 98, status: 'Pending', color: 'text-primary' },
@@ -79,18 +80,16 @@ function TrainerDashboard() {
             <p className="text-sm text-slate-500">AI-generated curricula awaiting trainer verification</p>
           </div>
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 bg-[#0b1326] px-4 py-2 rounded-xl border border-white/10">
-              <span className="text-[10px] uppercase font-bold text-slate-500">Status:</span>
-              <select 
-                value={statusFilter}
-                onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
-                className="bg-transparent text-sm text-white font-semibold border-none outline-none cursor-pointer"
-              >
-                <option value="All">All Statuses</option>
-                <option value="Pending">Pending</option>
-                <option value="Approved">Approved</option>
-              </select>
-            </div>
+            <CustomDropdown 
+              label="Status"
+              value={statusFilter}
+              onChange={(val) => { setStatusFilter(val); setCurrentPage(1); }}
+              options={[
+                { label: 'All Statuses', value: 'All' },
+                { label: 'Pending', value: 'Pending' },
+                { label: 'Approved', value: 'Approved' }
+              ]}
+            />
             <button className="bg-[#2d3449] hover:bg-[#31394d] text-white px-4 py-2 rounded-xl text-xs font-bold transition-all border border-white/10 active:scale-95">
               Export
             </button>
