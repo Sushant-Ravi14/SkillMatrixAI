@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import CustomDropdown from '../components/CustomDropdown';
 
 const ALL_CANDIDATES = [
   { id: 1, name: 'Rahul Sharma', email: 'rahul.s@skillpath.ai', role: 'Frontend Developer', status: 'Approved', statusClass: 'bg-emerald-400/10 text-emerald-400 border-emerald-400/20', progress: 82, avatar: null },
@@ -61,21 +62,19 @@ function Candidates() {
               onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
             />
           </div>
-          <div className="flex items-center gap-2 bg-[#1a2236] px-4 py-3 rounded-2xl border border-white/10">
-             <span className="text-[10px] uppercase font-bold text-slate-500">Status:</span>
-             <select 
-               value={statusFilter}
-               onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
-               className="bg-transparent text-sm text-white font-semibold border-none outline-none cursor-pointer"
-             >
-               <option value="All">All</option>
-               <option value="Approved">Approved</option>
-               <option value="Ready">Ready</option>
-               <option value="In Training">In Training</option>
-               <option value="Stuck">Stuck</option>
-               <option value="Review">Review</option>
-             </select>
-          </div>
+          <CustomDropdown 
+            label="Status"
+            value={statusFilter}
+            onChange={(val) => { setStatusFilter(val); setCurrentPage(1); }}
+            options={[
+              { label: 'All Statuses', value: 'All' },
+              { label: 'Approved', value: 'Approved' },
+              { label: 'Ready', value: 'Ready' },
+              { label: 'In Training', value: 'In Training' },
+              { label: 'Stuck', value: 'Stuck' },
+              { label: 'Review', value: 'Review' }
+            ]}
+          />
         </div>
       </header>
 

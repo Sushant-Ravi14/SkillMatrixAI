@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import CustomDropdown from '../components/CustomDropdown';
 
 const ALL_CANDIDATES = [
   { id: 1, name: 'Alex Chen', email: 'alex.chen@skillpath.ai', role: 'Senior Fullstack', match: 65, status: 'In Training', color: 'text-secondary' },
@@ -72,20 +73,18 @@ function HRDashboard() {
             <p className="text-sm text-slate-500">Real-time mapping of skills and onboarding milestones</p>
           </div>
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 bg-[#0b1326] px-4 py-2 rounded-xl border border-white/10">
-              <span className="text-[10px] uppercase font-bold text-slate-500">Status:</span>
-              <select 
-                value={statusFilter}
-                onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
-                className="bg-transparent text-sm text-white font-semibold border-none outline-none cursor-pointer"
-              >
-                <option value="All">All Statuses</option>
-                <option value="Approved">Approved</option>
-                <option value="In Training">In Training</option>
-                <option value="Completed">Completed</option>
-                <option value="Pending">Pending</option>
-              </select>
-            </div>
+            <CustomDropdown 
+              label="Status"
+              value={statusFilter}
+              onChange={(val) => { setStatusFilter(val); setCurrentPage(1); }}
+              options={[
+                { label: 'All Statuses', value: 'All' },
+                { label: 'Approved', value: 'Approved' },
+                { label: 'In Training', value: 'In Training' },
+                { label: 'Completed', value: 'Completed' },
+                { label: 'Pending', value: 'Pending' }
+              ]}
+            />
             <button 
               onClick={() => navigate('/hr/upload')}
               className="px-6 py-2.5 bg-gradient-to-r from-primary to-primary-container rounded-xl text-sm font-bold text-on-primary shadow-lg shadow-primary/10 hover:brightness-110 active:scale-95 transition-all"
