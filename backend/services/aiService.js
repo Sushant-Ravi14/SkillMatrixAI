@@ -27,7 +27,7 @@ ${resumeText}
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-1.5-flash',
+      model: 'gemini-2.5-flash',
       contents: prompt,
     });
     
@@ -40,7 +40,7 @@ ${resumeText}
     // FALLBACK for Demos/Hackathons when API keys fail
     return {
       name: "Simulated Candidate",
-      email: "demo.candidate@skillpath.ai",
+      email: `demo.candidate.${Date.now()}@skillpath.ai`,
       role: "Fullstack Engineer",
       skills: ["JavaScript", "React", "Node.js", "System Design"],
       experience: "Simulated 3 years of software engineering experience.",
