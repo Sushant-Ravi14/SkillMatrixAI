@@ -34,6 +34,17 @@ function CandidateDetail() {
     fetchCandidate();
   }, [id]);
 
+  const handleDownloadCV = () => {
+    const token = localStorage.getItem('token') || localStorage.getItem('userToken');
+    // Open download URL directly — browser will prompt a Save dialog
+    const url = `http://localhost:3000/api/trainer/candidate/${id}/download-cv`;
+    const a = document.createElement('a');
+    a.href = url;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    a.click();
+  };
+
   const handleComplete = async () => {
     try {
       const token = localStorage.getItem('token') || localStorage.getItem('userToken');
@@ -85,11 +96,12 @@ function CandidateDetail() {
           </p>
         </div>
         <div className="flex gap-4 flex-shrink-0">
-          <button className="px-8 py-4 rounded-2xl bg-[#1a2236] text-white font-bold hover:bg-[#2d3449] transition-all active:scale-95 text-sm border border-white/5">
+          <button
+            onClick={handleDownloadCV}
+            className="flex items-center gap-2 px-8 py-4 rounded-2xl bg-[#1a2236] text-white font-bold hover:bg-[#2d3449] transition-all active:scale-95 text-sm border border-white/5"
+          >
+            <span className="material-symbols-outlined text-primary text-base">download</span>
             Download CV
-          </button>
-          <button className="px-8 py-4 rounded-2xl bg-gradient-to-r from-primary to-primary-container text-on-primary font-black shadow-2xl shadow-primary/20 hover:brightness-110 transition-all active:scale-95 text-sm">
-            Schedule Review
           </button>
         </div>
       </header>

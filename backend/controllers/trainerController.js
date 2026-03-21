@@ -1,6 +1,8 @@
 const Roadmap = require("../models/Roadmap");
 const Candidate = require("../models/Candidate");
 const Comment = require("../models/Comment");
+const path = require("path");
+const fs = require("fs");
 
 
 // ===============================
@@ -170,11 +172,42 @@ const toggleTask = async (req, res) => {
 };
 
 
+// ===============================
+// 📄 DOWNLOAD CV
+// ===============================
+const downloadCV = async (req, res) => {
+  try {
+    const candidate = await Candidate.findById(req.params.id);
+    if (!candidate) {
+      return res.status(404).json({ error: "Candidate not found" });
+    }
+
+    if (!candidate.resumePath) {
+      return res.status(404).json({ error: "No resume file found for this candidate." });
+    }
+
+    // Resolve path relative to the backend root
+    const absolutePath = path.resolve(candidate.resumePath);
+
+    if (!fs.existsSync(absolutePath)) {
+      return res.status(404).json({ error: "Resume file not found on server." });
+    }
+
+    const ext = path.extname(absolutePath) || '.pdf';
+    const safeName = (candidate.name || 'candidate').replace(/[^a-z0-9]/gi, '_');
+    res.download(absolutePath, `${safeName}_CV${ext}`);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+
 module.exports = {
   getDashboard,
   reviewRoadmap,
   getCandidates,
   getCandidateDetails,
   completeTraining,
-  toggleTask
+  toggleTask,
+  downloadCV
 };

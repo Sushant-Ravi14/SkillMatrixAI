@@ -113,6 +113,7 @@ const uploadResume = async (req, res) => {
       email: uniqueEmail,
       roleApplied: aiResponse.role || 'Unspecified',
       assignedTrainer,
+      resumePath: req.file ? req.file.path : null,
       aiInsight: JSON.stringify({
         skills: aiResponse.skills || [],
         experience: aiResponse.experience || "",
