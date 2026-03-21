@@ -17,22 +17,21 @@ const getDashboard = async (req, res) => {
       await Roadmap.deleteMany({ _id: { $in: orphans } });
     }
 
-    // Compute stats only matching valid roadmaps. We query Candidate specifically to avoid double-counting 
-    // when a Candidate is marked COMPLETED but its Roadmap is still technically structured as PENDING/APPROVED.
-    const [pending, approved, rejected, completed] = await Promise.all([
-      Candidate.countDocuments({ status: "PENDING", roadmapId: { $exists: true, $ne: null } }),
-      Candidate.countDocuments({ status: { $in: ["APPROVED", "IN TRAINING", "IN_PROGRESS", "IN REVIEW"] }, roadmapId: { $exists: true, $ne: null } }),
-      Candidate.countDocuments({ status: "REJECTED", roadmapId: { $exists: true, $ne: null } }),
-      Candidate.countDocuments({ status: "COMPLETED", roadmapId: { $exists: true, $ne: null } })
+    // Compute strict stats directly mapping exactly the designated DB statuses to stop front-end grouping
+    const [total, pending, inTraining, completed] = await Promise.all([
+      Candidate.countDocuments({ roadmapId: { $ne: null } }),
+      Candidate.countDocuments({ status: "PENDING", roadmapId: { $ne: null } }),
+      Candidate.countDocuments({ status: { $in: ["IN TRAINING", "IN_PROGRESS", "IN REVIEW", "APPROVED"] }, roadmapId: { $ne: null } }),
+      Candidate.countDocuments({ status: "COMPLETED", roadmapId: { $ne: null } })
     ]);
 
     const recentRoadmaps = await Roadmap.find({ _id: { $nin: orphans } })
-      .populate("candidateId", "name email roleApplied matchScore")
+      .populate("candidateId", "name email roleApplied matchScore status")
       .sort({ createdAt: -1 })
       .limit(20);
 
     res.json({
-      stats: { pending, approved, rejected, completed },
+      stats: { total, pending, inTraining, completed },
       roadmaps: recentRoadmaps.filter(r => r.candidateId != null)
     });
   } catch (err) {
@@ -59,12 +58,13 @@ const reviewRoadmap = async (req, res) => {
 
     roadmap.status = action === "APPROVE" ? "APPROVED" : "REJECTED";
     roadmap.feedback = feedback || "";
-    roadmap.approvedBy = req.user.id;
+    if (req.user) roadmap.approvedBy = req.user.id;
 
     await roadmap.save();
 
+    const newStatus = action === "APPROVE" ? "APPROVED" : "REJECTED";
     await Candidate.findByIdAndUpdate(roadmap.candidateId, {
-      status: roadmap.status
+      status: newStatus
     });
 
     res.json({ success: true, roadmap });
@@ -147,10 +147,34 @@ const completeTraining = async (req, res) => {
 };
 
 
+// ===============================
+// ☑️ TOGGLE TASK COMPLETION
+// ===============================
+const toggleTask = async (req, res) => {
+  try {
+    const { phaseIndex, taskIndex } = req.body;
+    const roadmap = await Roadmap.findById(req.params.roadmapId);
+    if (!roadmap) return res.status(404).json({ error: 'Roadmap not found' });
+
+    const task = roadmap.content?.[phaseIndex]?.tasks?.[taskIndex];
+    if (!task) return res.status(404).json({ error: 'Task not found' });
+
+    task.completed = !task.completed;
+    roadmap.markModified('content');
+    await roadmap.save();
+
+    res.json({ success: true, completed: task.completed });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+
 module.exports = {
   getDashboard,
   reviewRoadmap,
   getCandidates,
   getCandidateDetails,
-  completeTraining
+  completeTraining,
+  toggleTask
 };

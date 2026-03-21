@@ -11,8 +11,8 @@ function TrainerDashboard() {
   const [stats, setStats] = useState({ 
     total: 0, 
     pending: 0, 
-    approved: 0, 
-    rejected: 0 
+    inTraining: 0, 
+    completed: 0
   });
 
   // Pagination State
@@ -33,20 +33,24 @@ function TrainerDashboard() {
         
         if (data && data.stats) {
           setStats({
-            total: (data.stats.approved || 0) + (data.stats.pending || 0) + (data.stats.rejected || 0) + (data.stats.completed || 0),
+            total: data.stats.total || 0,
             pending: data.stats.pending || 0,
-            approved: data.stats.approved || 0,
-            rejected: data.stats.rejected || 0
+            inTraining: data.stats.inTraining || 0,
+            completed: data.stats.completed || 0
           });
 
           if (data.roadmaps) {
             const formatted = data.roadmaps.map(roadmap => {
               const c = roadmap.candidateId || {};
+              const candidateStatus = (c.status || 'PENDING').toUpperCase();
               const statusColors = {
-                'PENDING': 'text-secondary', // matches dummy colors
-                'APPROVED': 'text-primary',
-                'REJECTED': 'text-error',
-                'COMPLETED': 'text-emerald-400'
+                'PENDING':     'text-secondary',
+                'IN REVIEW':   'text-amber-400',
+                'IN_PROGRESS': 'text-secondary',
+                'IN TRAINING': 'text-secondary',
+                'APPROVED':    'text-emerald-400',
+                'REJECTED':    'text-error',
+                'COMPLETED':   'text-primary'
               };
               
               const initials = c.name ? c.name.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase() : '??';
@@ -60,8 +64,8 @@ function TrainerDashboard() {
                 applied: `Applied ${appliedDate}`,
                 role: c.roleApplied || 'Unspecified',
                 score: roadmap.aiConfidence || 0,
-                status: roadmap.status ? (roadmap.status.charAt(0) + roadmap.status.slice(1).toLowerCase()) : 'Pending',
-                color: statusColors[roadmap.status?.toUpperCase()] || 'text-tertiary'
+                status: candidateStatus.charAt(0) + candidateStatus.slice(1).toLowerCase(),
+                color: statusColors[candidateStatus] || 'text-tertiary'
               };
             });
             setCandidates(formatted);
@@ -102,9 +106,9 @@ function TrainerDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {[
           { icon: 'group', label: 'Total Candidates', value: stats.total.toString(), sub: 'All records', subColor: 'text-emerald-400', barWidth: 'w-full', barColor: 'bg-primary' },
-          { icon: 'pending_actions', label: 'Pending Roadmaps', value: stats.pending.toString(), sub: 'Needs Review', subColor: 'text-secondary animate-pulse', barWidth: 'w-1/3', barColor: 'bg-secondary' },
-          { icon: 'verified', label: 'Approved', value: stats.approved.toString(), sub: 'In progress', subColor: 'text-slate-500', barWidth: 'w-5/6', barColor: 'bg-primary-container' },
-          { icon: 'block', label: 'Rejected', value: stats.rejected.toString(), sub: 'Filtered', subColor: 'text-error', barWidth: 'w-1/6', barColor: 'bg-error-container/40' },
+          { icon: 'pending_actions', label: 'Pending Review', value: stats.pending.toString(), sub: 'Needs Review', subColor: 'text-secondary animate-pulse', barWidth: 'w-1/3', barColor: 'bg-secondary' },
+          { icon: 'school', label: 'In Training', value: stats.inTraining.toString(), sub: 'Active', subColor: 'text-slate-400', barWidth: 'w-5/6', barColor: 'bg-primary-container' },
+          { icon: 'verified', label: 'Completed', value: stats.completed.toString(), sub: 'Finished', subColor: 'text-primary', barWidth: 'w-1/6', barColor: 'bg-primary/40' },
         ].map((card) => (
           <div key={card.label} className="bg-[#1a2236] p-6 rounded-2xl relative overflow-hidden group hover:bg-[#2d3449]/50 transition-all duration-300 border border-white/5">
             <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity text-white">

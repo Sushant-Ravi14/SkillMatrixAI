@@ -137,8 +137,62 @@ const uploadResume = async (req, res) => {
   }
 };
 
+// GET CANDIDATE FOR HR VIEW
+const getCandidateForHR = async (req, res) => {
+  try {
+    const candidate = await Candidate.findById(req.params.id).populate('roadmapId');
+    if (!candidate) return res.status(404).json({ success: false, message: 'Candidate not found' });
+    res.json({ success: true, candidate });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// RESUBMIT ROADMAP (after rejection)
+const resubmitRoadmap = async (req, res) => {
+  try {
+    const candidate = await Candidate.findById(req.params.id).populate('roadmapId');
+    if (!candidate) return res.status(404).json({ success: false, message: 'Candidate not found' });
+    if (candidate.status !== 'REJECTED') {
+      return res.status(400).json({ success: false, message: 'Candidate roadmap is not rejected.' });
+    }
+
+    // Re-run AI using their existing aiInsight data as context
+    const existingInsight = candidate.aiInsight ? JSON.parse(candidate.aiInsight) : {};
+    const summaryText = [
+      `Name: ${candidate.name}`,
+      `Role: ${candidate.roleApplied}`,
+      `Skills: ${(existingInsight.skills || []).join(', ')}`,
+      `Experience: ${existingInsight.experience || ''}`,
+      `Projects: ${(existingInsight.projects || []).join(', ')}`
+    ].join('\n');
+
+    const aiResponse = await generateRoadmap(summaryText);
+    const roadmapData = aiResponse.roadmap || [];
+
+    // Update the existing roadmap
+    const roadmap = await Roadmap.findById(candidate.roadmapId);
+    if (!roadmap) return res.status(404).json({ success: false, message: 'Roadmap not found' });
+
+    roadmap.content = roadmapData;
+    roadmap.status = 'PENDING';
+    roadmap.feedback = '';
+    await roadmap.save();
+
+    candidate.status = 'PENDING';
+    await candidate.save();
+
+    res.json({ success: true, message: 'Roadmap resubmitted successfully', roadmap });
+  } catch (err) {
+    console.error('Resubmit error:', err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
 module.exports = {
   getHRDashboard,
   uploadResume,
-  generateRoadmap
+  generateRoadmap,
+  getCandidateForHR,
+  resubmitRoadmap
 };

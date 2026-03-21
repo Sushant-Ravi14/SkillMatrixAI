@@ -139,33 +139,82 @@ function CandidateDetail() {
         </section>
 
         {/* Learning Roadmap */}
-        <section className="lg:col-span-4 bg-[#1a2236] border border-white/5 rounded-[2.5rem] p-10 shadow-2xl">
-          <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-10 flex items-center gap-3">
+        <section className="lg:col-span-4 bg-[#1a2236] border border-white/5 rounded-[2.5rem] p-10 shadow-2xl flex flex-col">
+          <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-6 flex items-center gap-3">
             <span className="material-symbols-outlined text-xs">route</span>
             Learning Roadmap
           </h3>
-          <div className="relative space-y-10">
-            <div className="absolute left-5 top-2 bottom-2 w-0.5 bg-white/5"></div>
-            
-            {(!roadmap?.content || roadmap.content.length === 0) && (
-              <p className="text-slate-500 text-sm italic pl-10">No curated steps generated.</p>
-            )}
+          
+          {(!roadmap?.content || roadmap.content.length === 0) && (
+            <p className="text-slate-500 text-sm italic">No roadmap steps generated yet.</p>
+          )}
 
-            {(roadmap?.content || []).map((step, idx) => (
-              <div key={idx} className="relative flex gap-6">
-                <div className={`z-10 w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 border bg-[#0b1326] border-primary text-primary shadow-[0_0_20px_rgba(128,131,255,0.1)]`}>
-                  <span className="material-symbols-outlined text-sm">play_arrow</span>
+          <div className="space-y-8 flex-1 overflow-y-auto max-h-[480px] pr-1">
+            {(roadmap?.content || []).map((phase, phaseIdx) => {
+              const doneTasks = phase.tasks?.filter(t => t.completed).length || 0;
+              const totalTasks = phase.tasks?.length || 0;
+              const phaseProgress = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
+
+              return (
+                <div key={phaseIdx} className="space-y-3">
+                  {/* Phase Header */}
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-xs font-black text-white uppercase tracking-wider">{phase.title}</h4>
+                    <span className="text-[10px] font-bold text-primary">{phaseProgress}%</span>
+                  </div>
+                  {/* Phase progress bar */}
+                  <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                    <div className="h-full bg-primary rounded-full transition-all duration-500" style={{ width: `${phaseProgress}%` }}></div>
+                  </div>
+                  {/* Tasks */}
+                  <div className="space-y-2 pl-1">
+                    {(phase.tasks || []).map((task, taskIdx) => (
+                      <label
+                        key={taskIdx}
+                        className="flex items-start gap-3 cursor-pointer group p-2 rounded-xl hover:bg-white/5 transition-all"
+                        onClick={async (e) => {
+                          e.preventDefault();
+                          const token = localStorage.getItem('token') || localStorage.getItem('userToken');
+                          try {
+                            const res = await fetch(`http://localhost:3000/api/trainer/roadmap/${roadmap._id}/task/toggle`, {
+                              method: 'POST',
+                              headers: {
+                                'Content-Type': 'application/json',
+                                ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                              },
+                              body: JSON.stringify({ phaseIndex: phaseIdx, taskIndex: taskIdx })
+                            });
+                            const data = await res.json();
+                            if (data.success) {
+                              // Update local state optimistically
+                              setRoadmap(prev => {
+                                const updated = JSON.parse(JSON.stringify(prev));
+                                updated.content[phaseIdx].tasks[taskIdx].completed = data.completed;
+                                return updated;
+                              });
+                            }
+                          } catch (err) {
+                            console.error('Toggle task error:', err);
+                          }
+                        }}
+                      >
+                        <div className={`w-4 h-4 mt-0.5 rounded flex-shrink-0 border-2 flex items-center justify-center transition-all ${task.completed ? 'bg-primary border-primary' : 'border-slate-600 group-hover:border-primary/50'}`}>
+                          {task.completed && (
+                            <span className="material-symbols-outlined text-on-primary" style={{ fontSize: '10px', fontVariationSettings: "'wght' 700" }}>check</span>
+                          )}
+                        </div>
+                        <span className={`text-xs leading-relaxed font-medium transition-all ${task.completed ? 'line-through text-slate-600' : 'text-slate-300 group-hover:text-white'}`}>
+                          {task.title}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
                 </div>
-                <div>
-                  <h4 className="font-bold text-sm text-primary">
-                    {step.title}
-                  </h4>
-                  <p className="text-[10px] font-bold uppercase tracking-widest mt-1 text-slate-400">Phase {idx+1}</p>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
-          <button className="w-full mt-12 py-4 border border-white/5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 hover:text-white hover:bg-white/[0.02] transition-all">
+
+          <button className="w-full mt-6 py-4 border border-white/5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 hover:text-white hover:bg-white/[0.02] transition-all">
             View Full Curriculum
           </button>
         </section>

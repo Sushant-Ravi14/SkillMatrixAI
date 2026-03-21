@@ -29,14 +29,16 @@ function Candidates() {
         if (data && data.data) {
           const formatted = data.data.map(c => {
              const statusMap = {
-               'PENDING': { label: 'Review', class: 'bg-surface-container-highest text-outline border-outline-variant/20' },
-               'APPROVED': { label: 'Ready', class: 'bg-emerald-400/10 text-emerald-400 border-emerald-400/20' },
-               'IN_PROGRESS': { label: 'In Training', class: 'bg-secondary/10 text-secondary border-secondary/20' },
-               'REJECTED': { label: 'Stuck', class: 'bg-error/10 text-error border-error/20' },
-               'COMPLETED': { label: 'Approved', class: 'bg-primary/10 text-primary border-primary/20' }
+               'PENDING':     { label: 'Pending',     class: 'bg-surface-container-highest text-outline border-outline-variant/20' },
+               'IN REVIEW':   { label: 'In Review',   class: 'bg-amber-400/10 text-amber-400 border-amber-400/20' },
+               'IN_PROGRESS': { label: 'In Progress', class: 'bg-secondary/10 text-secondary border-secondary/20' },
+               'IN TRAINING': { label: 'In Training', class: 'bg-secondary/10 text-secondary border-secondary/20' },
+               'APPROVED':    { label: 'Approved',    class: 'bg-emerald-400/10 text-emerald-400 border-emerald-400/20' },
+               'REJECTED':    { label: 'Rejected',    class: 'bg-error/10 text-error border-error/20' },
+               'COMPLETED':   { label: 'Completed',   class: 'bg-primary/10 text-primary border-primary/20' }
              };
              
-             const st = statusMap[c.status ? c.status.toUpperCase() : 'PENDING'] || statusMap['PENDING'];
+             const st = statusMap[(c.status || 'PENDING').toUpperCase()] || statusMap['PENDING'];
              
              return {
                 id: c._id,
