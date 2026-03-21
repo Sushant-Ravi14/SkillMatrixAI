@@ -101,7 +101,7 @@ function CandidateDetail() {
             className="flex items-center gap-2 px-8 py-4 rounded-2xl bg-[#1a2236] text-white font-bold hover:bg-[#2d3449] transition-all active:scale-95 text-sm border border-white/5"
           >
             <span className="material-symbols-outlined text-primary text-base">download</span>
-            Download CV
+            Download Resume
           </button>
         </div>
       </header>
